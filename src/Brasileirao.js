@@ -2,6 +2,15 @@ import React from "react";
 import "./Brasileirao.css";
 import { getLeagueTable, getNextMatches } from "./api";
 
+const dateTimeFormat = Intl.DateTimeFormat("pt-br", {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric"
+});
+const formatDate = date => dateTimeFormat.format(new Date(date));
+
 const Brasileirao = () => {
   const [loading, setLoading] = React.useState(false);
   const [leagueTable, setLeagueTable] = React.useState();
@@ -56,11 +65,27 @@ const Brasileirao = () => {
                   </tr>
                 ))}
               </tbody>
-
             </table>
           </div>
           <h1>Próximas partidas</h1>
-          <div></div>
+          <div>
+            <table className="stripe-horizonal">
+              <thead>
+                <tr>
+                  <th>Times</th>
+                  <th>Horário</th>
+                </tr>
+              </thead>
+              <tbody>
+                {nextMatches.map(m => (
+                  <tr key={m.id.toString()}>
+                    <td>{`${m.homeTeam.name} X ${m.awayTeam.name}`}</td>
+                    <td>{formatDate(m.utcDate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </div>
