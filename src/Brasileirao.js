@@ -1,6 +1,7 @@
 import React from "react";
 import "./Brasileirao.css";
 import { getLeagueTable, getNextMatches } from "./api";
+import createPersistedState from 'use-persisted-state';
 
 const dateTimeFormat = Intl.DateTimeFormat("pt-br", {
   year: "numeric",
@@ -11,10 +12,22 @@ const dateTimeFormat = Intl.DateTimeFormat("pt-br", {
 });
 const formatDate = date => dateTimeFormat.format(new Date(date));
 
+const useLocalFavoritesState = createPersistedState('platzi.soccer.favorites');
+
 const Brasileirao = () => {
   const [loading, setLoading] = React.useState(false);
   const [leagueTable, setLeagueTable] = React.useState();
   const [nextMatches, setNextMatches] = React.useState();
+  const [favorites, setFavorites] = useLocalFavoritesState([]);
+  const handleToggleFavorite = teamName => {
+    let newFavorites;
+    if (favorites.includes(teamName)) {
+      newFavorites = [...favorites.filter(f => f !== teamName)];
+    } else {
+      newFavorites = [...favorites, teamName];
+    }
+    setFavorites(newFavorites);
+  };
   React.useEffect(() => {
     const leagueId = 2013;
     const load = async () => {
@@ -39,6 +52,7 @@ const Brasileirao = () => {
                 <tr>
                   <th />
                   <th />
+                  <th />
                   <th>P</th>
                   <th>J</th>
                   <th>V</th>
@@ -52,6 +66,11 @@ const Brasileirao = () => {
               <tbody>
                 {leagueTable.map(r => (
                   <tr key={r.position}>
+                    <td>
+                      <button onClick={() => handleToggleFavorite(r.team.name)}>
+                        {favorites.includes(r.team.name) ? "-" : "+"}
+                      </button>
+                    </td>
                     <td>{r.position}</td>
                     <td>{r.team.name}</td>
                     <td>{r.points}</td>
@@ -72,6 +91,7 @@ const Brasileirao = () => {
             <table className="stripe-horizonal">
               <thead>
                 <tr>
+                  <th />
                   <th>Times</th>
                   <th>Horário</th>
                 </tr>
@@ -79,6 +99,10 @@ const Brasileirao = () => {
               <tbody>
                 {nextMatches.map(m => (
                   <tr key={m.id.toString()}>
+                    <td>
+                      {favorites.includes(m.homeTeam.name) ||
+                        (favorites.includes(m.awayTeam.name) && <span>X</span>)}
+                    </td>
                     <td>{`${m.homeTeam.name} X ${m.awayTeam.name}`}</td>
                     <td>{formatDate(m.utcDate)}</td>
                   </tr>
